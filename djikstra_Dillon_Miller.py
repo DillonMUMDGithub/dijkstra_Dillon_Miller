@@ -1,8 +1,7 @@
 """ Main Fuction for running project 2 
     """
     
-#Establish Obstacle Matrix    
-# from ObstacleMatTest import ObstMat
+#Import Necessary dependencies
 import matplotlib.pyplot as plt
 import time as time
 from queue import PriorityQueue
@@ -13,56 +12,65 @@ import cv2 as cv
 
 
     
-    
+#Function to move Up, adds C2C    
 def MoveUp(Node,C2C):
     NewNode = Node.copy()
     NewNode[1] = NewNode[1]+1
     NewCost = C2C+1
     return(NewNode,NewCost)
+#Function to move Down, adds C2C
 def MoveDown(Node,C2C):
     NewNode = Node.copy()
     NewNode[1] = NewNode[1]-1
     NewCost = C2C+1
     return(NewNode,NewCost)
+#Function to move Left, adds C2C
 def MoveLeft(Node,C2C):
     NewNode = Node.copy()
     NewNode[0] = NewNode[0]-1
     NewCost = C2C+1
     return(NewNode,NewCost)
+#Function to move Right, adds C2C
 def MoveRight(Node,C2C):
     NewNode = Node.copy()
     NewNode[0] = NewNode[0]+1
     NewCost = C2C+1
     return(NewNode,NewCost)
+#Function to move Up and Left, adds C2C
 def MoveUL(Node,C2C):
     NewNode = Node.copy()
     NewNode[0] = NewNode[0]-1
     NewNode[1] = NewNode[1]+1
     NewCost = C2C+1.4
     return(NewNode,NewCost)
+#Function to move Up and Right, adds C2C
 def MoveUR(Node,C2C):
     NewNode = Node.copy()
     NewNode[0] = NewNode[0]+1
     NewNode[1] = NewNode[1]+1
     NewCost = C2C+1.4
     return(NewNode,NewCost)
+#Function to move Down and Left, adds C2C
 def MoveDL(Node,C2C):
     NewNode = Node.copy()
     NewNode[0] = NewNode[0]-1
     NewNode[1] = NewNode[1]-1
     NewCost = C2C+1.4
     return(NewNode,NewCost)
+#Function to move Down and Right, adds C2C
 def MoveDR(Node,C2C):
     NewNode = Node.copy()
     NewNode[0] = NewNode[0]+1
     NewNode[1] = NewNode[1]-1
     NewCost = C2C+1.4
     return(NewNode,NewCost)
+#Function to check if the current node is the goal node
 def CheckifGoal(Node,GoalNode):
     Stop = 0
     if Node ==GoalNode:
         Stop = 1
     return Stop
+#function to check if the node is an obstacle or outside the boundaries
 def CheckIfObstacle(Node, ObstMat):
     InObstacle = 0
     if Node[1]>499:
@@ -76,44 +84,20 @@ def CheckIfObstacle(Node, ObstMat):
     elif ObstMat[Node[1]][Node[0]] == -1:
         InObstacle = 1   
     return InObstacle
+#Function to check if the node is within the closed node
 def CheckClosed(Node,Closed):
     InClosed = 0
     if Node in Closed:
         InClosed = 1
     return InClosed
-def CheckAllClosed(Nodes,Closed):
-    InClosedMat = [0,0,0,0,0,0,0,0]
-    for ClosedMat in Closed:
-        if Nodes[0]==ClosedMat:
-            InClosedMat[0] = 1
-        if Nodes[1]==ClosedMat:
-            InClosedMat[1] = 1
-        if Nodes[2]==ClosedMat:
-            InClosedMat[2] = 1
-        if Nodes[3]==ClosedMat:
-            InClosedMat[3] = 1
-        if Nodes[4]==ClosedMat:
-            InClosedMat[4] = 1
-        if Nodes[5]==ClosedMat:
-            InClosedMat[5] = 1
-        if Nodes[6]==ClosedMat:
-            InClosedMat[6] = 1
-        if Nodes[7]==ClosedMat:
-            InClosedMat[7] = 1    
-    
-    return InClosedMat
+##### Definition of the Map #####
+#Map matrices, BW and Color
 ObstMat = np.full((500,1200),np.inf)
 ObstMatR = np.full((500,1200),0)
 ObstMatG = np.full((500,1200),0)
 ObstMatB = np.full((500,1200),0)
 
-
-def normalize(im):
-   # Normalise image to range 0..1
-    min, max = im.min(), im.max()
-    return (im.astype(float)-min)/(max-min)
-# ObstMat[]
-# print(ObstMat[500][0])
+#Leftmost object,-1 value for C2C storage, Red in color for bloating
 print(ObstMat.shape)
 for i in range(94,180):
     for k in range(89,500):
@@ -121,20 +105,21 @@ for i in range(94,180):
         ObstMatR[k][i] = 255
         ObstMatG[k][i] = 0
         ObstMatB[k][i] = 0
-        
+#Leftmost boundary, blue for primary obstacle
 for i in range(99,175):
     for k in range(94,500):
         ObstMat[k][i] = -1
         ObstMatB[k][i] = 255
         ObstMatR[k][i] = 0
         
-# print(ObstMat[150][300])
+#Right rectangle object,-1 value for C2C storage, Red in color for bloating
 for i in range(269,354):
     for k in range(0,404):
         ObstMat[k][i] = -1
         ObstMatR[k][i] = 255
         ObstMatG[k][i] = 0
         ObstMatB[k][i] = 0
+# Right rectangle obstacle, blue for primary obstacle
 for i in range(274,349):
     for k in range(0,399):
         ObstMat[k][i] = -1
@@ -142,8 +127,9 @@ for i in range(274,349):
         ObstMatG[k][i] = 0
         ObstMatB[k][i] = 255        
         
-#right obstacle
-
+#right U shape obstacle
+# -1 value for C2C storage, Red in color for bloating
+#Primary vertical rectangle
 for i in range(1014,1104):
     for k in range(44,454):
         ObstMat[k][i] = -1
@@ -156,6 +142,7 @@ for i in range(1019,1099):
         ObstMatR[k][i] = 0
         ObstMatG[k][i] = 0
         ObstMatB[k][i] = 255
+#Top Horizonal rectangle
 for i in range(894,1019):
     for k in range(369,454):
         ObstMat[k][i] = -1
@@ -167,8 +154,8 @@ for i in range(899,1019):
         ObstMat[k][i] = -1
         ObstMatR[k][i] = 0
         ObstMatG[k][i] = 0
-        ObstMatB[k][i] = 255
-        
+        ObstMatB[k][i] = 255 
+#Bottom Horizontal Rectangle     
 for i in range(894,1019):
     for k in range(44,124):
         ObstMat[k][i] = -1
@@ -182,8 +169,8 @@ for i in range(899,1019):
         ObstMatG[k][i] = 0
         ObstMatB[k][i] = 255        
         
-#Hexagon
-
+#Hexagon obstacle
+#Establishes one central rectangle, and then 4 triangles
 #MiddleRectangle:
 for i in range(514,784):
     for k in range(174,324):
@@ -191,7 +178,7 @@ for i in range(514,784):
         ObstMatR[k][i] = 255
         ObstMatG[k][i] = 0
         ObstMatB[k][i] = 0
-        #Red Barrier Middle Rectangle
+#Red Barrier Middle Rectangle
 for i in range(519,779):
     for k in range(174,324):
         ObstMat[k][i] = -1
@@ -211,7 +198,7 @@ for i in range(514,649):
             ObstMatR[k][i] = 255
             ObstMatG[k][i] = 0
             ObstMatB[k][i] = 0 
-#Tope Left No Barrier
+#Top Left No Barrier
 GRat = 75/130
 for i in range(519,649):
     for k in range(324,399):
@@ -223,8 +210,7 @@ for i in range(519,649):
             ObstMatR[k][i] = 0
             ObstMatG[k][i] = 0
             ObstMatB[k][i] = 255            
-            
-            
+               
 #TopRight Triangle
 GRat = -80/135          
 for i in range(649,784):
@@ -237,7 +223,7 @@ for i in range(649,784):
             ObstMatR[k][i] = 255
             ObstMatG[k][i] = 0
             ObstMatB[k][i] = 0 
-            #TopRight No barrier
+#TopRight No barrier
 GRat = -75/130        
 for i in range(649,779):
     for k in range(324,399):
@@ -248,7 +234,7 @@ for i in range(649,779):
             ObstMat[k][i] = -1
             ObstMatR[k][i] = 0
             ObstMatG[k][i] = 0
-            ObstMatB[k][i] = 255        #Need to fix  
+            ObstMatB[k][i] = 255        
 #BotRightTriangle
 GRat = 80/135
 for i in range(649,784):
@@ -261,6 +247,7 @@ for i in range(649,784):
             ObstMatR[k][i] = 255
             ObstMatG[k][i] = 0
             ObstMatB[k][i] = 0 
+# BotLeft No fluffing
 GRat = 75/130
 for i in range(649,779):
     for k in range(99,174):
@@ -276,18 +263,17 @@ for i in range(649,779):
 GRat = -80/135          
 for i in range(514,649):
     for k in range(94,174):
-        # ObstMat[k][i] = -1
         XTemp = i-514
         YTemp = k-94
         if (XTemp*GRat)+80<YTemp:
             ObstMat[k][i] = -1
             ObstMatR[k][i] = 255
             ObstMatG[k][i] = 0
-            ObstMatB[k][i] = 0     
+            ObstMatB[k][i] = 0    
+#Bot Left No fluffing 
 GRat = -75/130        
 for i in range(519,649):
     for k in range(99,174):
-        # ObstMat[k][i] = -1
         XTemp = i-519
         YTemp = k-99
         if (XTemp*GRat)+75<YTemp:
@@ -295,12 +281,29 @@ for i in range(519,649):
             ObstMatR[k][i] = 0
             ObstMatG[k][i] = 0
             ObstMatB[k][i] = 255
-
-
-startNode = [0,0]
-endNode = [1150,250]
-# startNode = [random.randint(0,50),random.randint(50,450)]
-# endNode = [random.randint(1050,1149),random.randint(50,450)]
+while(True):
+    A = input("Enter r for random start and end points or u for user input start and end points")
+    if A == 'r':
+        startNode = [random.randint(0,50),random.randint(50,450)]
+        endNode = [random.randint(1050,1149),random.randint(50,450)]
+        break
+    elif A == 'u':
+        Xstart = int(input("enter an Integer value to for the x value of the start "))
+        Ystart = int(input("enter an Integer value to for the y value of the start "))
+        Xend = int(input("enter an Integer value to for the x value of the end "))
+        Yend = int(input("enter an Integer value to for the y value of the end "))
+        startNode = [Xstart,Ystart]
+        endNode = [Xend,Yend]
+        if ObstMat[Ystart][Xstart] == -1:
+            print("start node within an obstacle ")
+        elif ObstMat[Yend][Xend] == -1:
+            print("end node within an obstacle ")
+        else:
+            break
+        
+    else:
+        print("invalid input")
+#Starting C2C values
 OriginalC2C = 0
 WorkingC2C = 0
 
@@ -316,32 +319,20 @@ C2C.append(0)
 TotalQ = PriorityQueue()
 TotalQ.put((0, [startNode,'N/A']))
 ClosedQPrio = PriorityQueue()
-
+#Create a matrix to store images for the video creation
 imgmat = []
+#first parent is N/A
 Parent.append('N/A')
+#Conditionalcounter to track progess
 Go = 1
-
-
-# print(CheckIfObstacle([150,50],ObstMat))
-# plt.ion()
-# fig = plt.figure()
-# fig = plt.figure()
-# plt.matshow(ObstMat)
-# plt.show(block=False)
-#10001 - 5.688
-#20001 - 36.13
-#30001 - 88.04
-#100001 - 1212
-# For about half: 1000001
-# Number of pixels 600,000
+#Conditional to keep the while loop going
 Stop = 0
+#Start the timer
 start = time.time()
 while(Stop==0):
-    # plt.show(block=False)
     try:
         Go=Go+1
-        # print(Go)
-    
+
         
         QPop = TotalQ.get()
         WorkingC2C = QPop[0]
@@ -353,11 +344,6 @@ while(Stop==0):
             FinalParent = WorkingParent
             FinalC2C = WorkingC2C
             break
-        # print(WorkingNode)
-        # ClosedQPrio.put(())
-        # ClosedQ.append(WorkingNode)
-        # ClosedParent.append(WorkingParent)
-        # ClosedC2C.append(WorkingC2C)
 
         Up,UpC2C = MoveUp(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(Up,ObstMat)
@@ -464,13 +450,15 @@ while(Stop==0):
                     C2C.append(DRC2C)
                     TotalQ.put((DRC2C,[DR,WorkingNode])) 
         if Go%1500 ==0:
-            print(Go)
+            # print(Go)
             ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
             imgname = "Temp"+str(Go)+".png"
             cv.imwrite(imgname, ObstMat3d)
             img = cv.imread(imgname)
             imgmat.append(img)
             os.remove(imgname) 
+            if Go%15000 ==0:
+                print("Nodes Searched:", Go)
             # video.write(img)
             # os.remove("Tempimg.png") 
             
@@ -480,7 +468,7 @@ while(Stop==0):
 # video.release()
 # os.remove("Tempimg.png") 
 end = time.time()    
-print(end-start)    
+print("Time Taken To Complete:",end-start)    
 
 
 # Least = TotalQ.get()
@@ -488,12 +476,12 @@ print(end-start)
 LeastC2C = FinalC2C
 LeastNode = FinalNode
 LeastParent = FinalParent
-print(WorkingC2C)
-print(WorkingNode)
-print(WorkingParent)
+print("Final Cost to Come:",WorkingC2C)
+# print(WorkingNode)
+# print(WorkingParent)
 
-print(len(Parent))
-print(len(OpenQ))
+# print(len(Parent))
+# print(len(OpenQ))
 # B = TotalQ.get([LeastParent])
 # print(B)
 TrackBack = []
@@ -501,25 +489,19 @@ TrackBack = []
 # print(B)
 # C = OpenQ[B]
 end=1
+print("computing optimal path to final node")
 while (end==1):
-    # print(startNode)
-    B = OpenQ.index(LeastParent)
-    # print(B)   
+    B = OpenQ.index(LeastParent)  
     C = OpenQ[B]
     TrackBack.append(C)
-    # print(C)
     D = Parent[B]
-    # print(C)
-    # print(D)
-    # E= OpenQ[D]
-    # print(E)
     LeastParent = D
     if D == [0,0]:
         end = 0
     elif D == startNode:    
         end = 0
 TrackBack.append(startNode)
-print(TrackBack)
+
 counttrack = 0
 for pixel in TrackBack:
     try:
@@ -546,7 +528,6 @@ for pixel in TrackBack:
         counttrack = counttrack+1
         #Append the trackback iamges to the 
         if counttrack%20 ==0:
-            print(counttrack)
             ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
             imgname = "Temp"+str(Go)+".png"
             cv.imwrite(imgname, ObstMat3d)
@@ -565,20 +546,18 @@ for i in range (0,10):
     imgmat.append(img)
     os.remove(imgname)    
     
-print("len im mat",len(imgmat))       
+print("Creating Final Output Video")      
 video=cv.VideoWriter('TestVideo.mp4',cv.VideoWriter_fourcc(*'MP4V'),10,(1200,500))
 for i in range(0,len(imgmat)):
     video.write(imgmat[i])
 video.release()
 cv.destroyAllWindows()
-print(len(ClosedQ))
-print(len(ClosedC2C))
-print(len(ClosedParent))
+
 ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
 cv.imwrite("FinalMap.png", ObstMat3d)
 plt.matshow(ObstMat3d)
 plt.show()
 
 
-plt.matshow(ObstMat,cmap = 'gray')
-plt.show()
+# plt.matshow(ObstMat,cmap = 'gray')
+# plt.show()
