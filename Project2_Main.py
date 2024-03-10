@@ -463,11 +463,22 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(DRC2C)
                     TotalQ.put((DRC2C,[DR,WorkingNode])) 
-
+        if Go%1500 ==0:
+            print(Go)
+            ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
+            imgname = "Temp"+str(Go)+".png"
+            cv.imwrite(imgname, ObstMat3d)
+            img = cv.imread(imgname)
+            imgmat.append(img)
+            os.remove(imgname) 
+            # video.write(img)
+            # os.remove("Tempimg.png") 
+            
         
     except:
         break
-
+# video.release()
+# os.remove("Tempimg.png") 
 end = time.time()    
 print(end-start)    
 
@@ -534,11 +545,32 @@ for pixel in TrackBack:
         ObstMatB[pixel[1]][pixel[0]+1] = 255
         counttrack = counttrack+1
         #Append the trackback iamges to the 
-        
+        if counttrack%20 ==0:
+            print(counttrack)
+            ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
+            imgname = "Temp"+str(Go)+".png"
+            cv.imwrite(imgname, ObstMat3d)
+            img = cv.imread(imgname)
+            imgmat.append(img)
+            os.remove(imgname) 
     except:
         break
     
- 
+ #Append 10 frames of the final path (1second)   
+for i in range (0,10):
+    ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
+    imgname = "Temp"+str(Go)+".png"
+    cv.imwrite(imgname, ObstMat3d)
+    img = cv.imread(imgname)
+    imgmat.append(img)
+    os.remove(imgname)    
+    
+print("len im mat",len(imgmat))       
+video=cv.VideoWriter('TestVideo.mp4',cv.VideoWriter_fourcc(*'MP4V'),10,(1200,500))
+for i in range(0,len(imgmat)):
+    video.write(imgmat[i])
+video.release()
+cv.destroyAllWindows()
 print(len(ClosedQ))
 print(len(ClosedC2C))
 print(len(ClosedParent))
