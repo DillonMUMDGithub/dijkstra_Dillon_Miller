@@ -1,4 +1,6 @@
 """ Main Fuction for running project 2 
+GitHub Repository:
+https://github.com/DillonMUMDGithub/dijkstra_Dillon_Miller
     """
     
 #Import Necessary dependencies
@@ -98,7 +100,7 @@ ObstMatG = np.full((500,1200),0)
 ObstMatB = np.full((500,1200),0)
 
 #Leftmost object,-1 value for C2C storage, Red in color for bloating
-print(ObstMat.shape)
+
 for i in range(94,180):
     for k in range(89,500):
         ObstMat[k][i] = -1
@@ -281,11 +283,14 @@ for i in range(519,649):
             ObstMatR[k][i] = 0
             ObstMatG[k][i] = 0
             ObstMatB[k][i] = 255
+#Pronpt users for desired start states or random start
 while(True):
     A = input("Enter r for random start and end points or u for user input start and end points")
     if A == 'r':
         startNode = [random.randint(0,50),random.randint(50,450)]
-        endNode = [random.randint(1050,1149),random.randint(50,450)]
+        endNode = [random.randint(1125,1174),random.randint(50,450)]
+        print("Start Node:", startNode)
+        print("End Node:", endNode)
         break
     elif A == 'u':
         Xstart = int(input("enter an Integer value to for the x value of the start "))
@@ -306,7 +311,7 @@ while(True):
 #Starting C2C values
 OriginalC2C = 0
 WorkingC2C = 0
-
+#Series of lists for storage of critical values
 OpenQ = []
 ClosedQ = []
 ClosedC2C = []
@@ -316,6 +321,7 @@ Parent = []
 C2C = []
 OpenQ.append(startNode)
 C2C.append(0)
+#Create a priority queue for easy and efficient search
 TotalQ = PriorityQueue()
 TotalQ.put((0, [startNode,'N/A']))
 ClosedQPrio = PriorityQueue()
@@ -344,21 +350,34 @@ while(Stop==0):
             FinalParent = WorkingParent
             FinalC2C = WorkingC2C
             break
-
+        
+        #Below is a seris of operatios for movements, there are 8 subsets of code for the 8 actions.
+        #Only the up action is commented, however all follow the exact same protocol.
+        
+        #Move Up Action
         Up,UpC2C = MoveUp(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(Up,ObstMat)
         if A ==0:
+            #Check if the pixel is in the closed Q
             B = CheckClosed(Up,ClosedQ)
             if B ==0:
+                #Only update if C2C is less than already held C2C
                 if UpC2C<ObstMat[Up[1]][Up[0]]:
+                    #Update ObstMat with the C2C for the pixel
                     ObstMat[Up[1]][Up[0]] = UpC2C
+                    #Make the pixel green
                     ObstMatG[Up[1]][Up[0]] = 255
+                    #Append to OpenQ
                     OpenQ.append(Up)
+                    #Append previous node to parentQ
                     Parent.append(WorkingNode)
+                    # Append C2C to C2C List
                     C2C.append(UpC2C)
+                    #Append to the Open Queue
                     TotalQ.put((UpC2C,[Up,WorkingNode]))   
 
-            
+        #Same function as above but for movements Down
+        #Move Down Action
         Down,DownC2C =MoveDown(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(Down,ObstMat)
         if A ==0:
@@ -371,7 +390,7 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(DownC2C)
                     TotalQ.put((DownC2C,[Down,WorkingNode])) 
-                    
+        #Move Left Action         
         Left,LeftC2C =MoveLeft(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(Left,ObstMat)
         if A ==0:
@@ -384,7 +403,7 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(LeftC2C)
                     TotalQ.put((LeftC2C,[Left,WorkingNode])) 
-                    
+        #Move Right Action           
         Right,RightC2C =MoveRight(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(Right,ObstMat)
         if A ==0:
@@ -397,7 +416,7 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(RightC2C)
                     TotalQ.put((RightC2C,[Right,WorkingNode])) 
-                    
+        #Move Up and Left Action        
         UL,ULC2C =MoveUL(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(UL,ObstMat)
         if A ==0:
@@ -410,7 +429,7 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(ULC2C)
                     TotalQ.put((ULC2C,[UL,WorkingNode])) 
-                    
+        #Move Up and Right Action            
         UR,URC2C =MoveUR(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(UR,ObstMat)
         if A ==0:
@@ -423,7 +442,7 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(URC2C)
                     TotalQ.put((URC2C,[UR,WorkingNode])) 
-                    
+        #Move Down and Left Action             
         DL,DLC2C =MoveDL(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(DL,ObstMat)
         if A ==0:
@@ -436,7 +455,7 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(DLC2C)
                     TotalQ.put((DLC2C,[DL,WorkingNode])) 
-                    
+        #Move Down and Right Action             
         DR,DRC2C =MoveDR(WorkingNode,WorkingC2C)
         A = CheckIfObstacle(DR,ObstMat)
         if A ==0:
@@ -449,45 +468,36 @@ while(Stop==0):
                     Parent.append(WorkingNode)
                     C2C.append(DRC2C)
                     TotalQ.put((DRC2C,[DR,WorkingNode])) 
+        #Record Frames every 1500 nodes
         if Go%1500 ==0:
-            # print(Go)
+            
             ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
             imgname = "Temp"+str(Go)+".png"
             cv.imwrite(imgname, ObstMat3d)
             img = cv.imread(imgname)
+            img = cv.flip(img,0)
             imgmat.append(img)
             os.remove(imgname) 
             if Go%15000 ==0:
                 print("Nodes Searched:", Go)
-            # video.write(img)
-            # os.remove("Tempimg.png") 
+            
             
         
     except:
+        print("Nothing Left to Search")
         break
-# video.release()
-# os.remove("Tempimg.png") 
+
 end = time.time()    
 print("Time Taken To Complete:",end-start)    
 
-
-# Least = TotalQ.get()
-# print(Least)
+#Establish the final states
 LeastC2C = FinalC2C
 LeastNode = FinalNode
 LeastParent = FinalParent
 print("Final Cost to Come:",WorkingC2C)
-# print(WorkingNode)
-# print(WorkingParent)
 
-# print(len(Parent))
-# print(len(OpenQ))
-# B = TotalQ.get([LeastParent])
-# print(B)
 TrackBack = []
-# B = OpenQ.index(LeastParent)
-# print(B)
-# C = OpenQ[B]
+
 end=1
 print("computing optimal path to final node")
 while (end==1):
@@ -503,6 +513,7 @@ while (end==1):
 TrackBack.append(startNode)
 
 counttrack = 0
+#For all the pixels in TrackBack, make the pixel and the 4 cardinal direction pixels around them white
 for pixel in TrackBack:
     try:
         ObstMat[pixel[1]][pixel[0]] = -1
@@ -532,6 +543,7 @@ for pixel in TrackBack:
             imgname = "Temp"+str(Go)+".png"
             cv.imwrite(imgname, ObstMat3d)
             img = cv.imread(imgname)
+            img = cv.flip(img,0)
             imgmat.append(img)
             os.remove(imgname) 
     except:
@@ -543,21 +555,22 @@ for i in range (0,10):
     imgname = "Temp"+str(Go)+".png"
     cv.imwrite(imgname, ObstMat3d)
     img = cv.imread(imgname)
+    img = cv.flip(img,0)
     imgmat.append(img)
     os.remove(imgname)    
-    
+#Create the final output video
 print("Creating Final Output Video")      
-video=cv.VideoWriter('TestVideo.mp4',cv.VideoWriter_fourcc(*'MP4V'),10,(1200,500))
+video=cv.VideoWriter('djikstra_Dillon_Miller.mp4',cv.VideoWriter_fourcc(*'MP4V'),10,(1200,500))
 for i in range(0,len(imgmat)):
     video.write(imgmat[i])
 video.release()
 cv.destroyAllWindows()
-
+#Write a file of the final image
 ObstMat3d = np.dstack((ObstMatR,ObstMatG,ObstMatB))
+ObstMat3d = cv.flip(img,0)
 cv.imwrite("FinalMap.png", ObstMat3d)
-plt.matshow(ObstMat3d)
-plt.show()
 
+print("Completed!")
+# plt.matshow(ObstMat3d)
+# plt.show(origin='lower')
 
-# plt.matshow(ObstMat,cmap = 'gray')
-# plt.show()
